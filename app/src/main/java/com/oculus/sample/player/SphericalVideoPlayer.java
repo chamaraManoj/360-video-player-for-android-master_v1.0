@@ -145,7 +145,7 @@ public class SphericalVideoPlayer extends TextureView implements SensorEventList
         pitch+=90;
         yaw*=(-1);
 
-        Log.d("Debug_phi","Axis X "+pitch+" Roll "+roll + " yaw "+ yaw);
+       // Log.d("Debug_phi","Axis X "+pitch+" Roll "+roll + " yaw "+ yaw);
 
         Message msg = Message.obtain();
         msg.what = RenderThread.MSG_ON_GYRO_CHANGE;
@@ -374,7 +374,7 @@ public class SphericalVideoPlayer extends TextureView implements SensorEventList
         private static final int SENSOR_TOUCH = 0x7;
         private static final int SENSOR_GYRO = 0x8;
 
-        private static final float FOVY = 70f;
+        private static final float FOVY = 60f;
         private static final float Z_NEAR = 1f;
         private static final float Z_FAR = 1000f;
         private static final float DRAG_FRICTION = 0.1f;
@@ -408,6 +408,8 @@ public class SphericalVideoPlayer extends TextureView implements SensorEventList
 
         private SphericalSceneRenderer renderer;
 
+        /**Sync the frame display and the rendering interface. This always tirggered with any call
+         * back from the display refreshment and this is the firing point to start rendering the frame*/
         private class ChoreographerCallback implements Choreographer.FrameCallback {
             @Override
             public void doFrame(long frameTimeNanos) {
@@ -473,14 +475,22 @@ public class SphericalVideoPlayer extends TextureView implements SensorEventList
         private void onSurfaceAvailable(SurfaceTexture surfaceTexture, int width, int height) {
             Log.d(TAG, "onSurfaceAvailable w: " + width + " h: " + height);
 
+            /**Creating a render surface, window surface to render the objects. */
             eglRenderTarget.createRenderSurface(surfaceTexture);
 
+            /**OPENGL ES do the rendering in a separate thread. Thre reason to use this is to
+             * synchronize the frame refreshing rate of the display with the rendering interface.
+             * But how are they connected????*/
             Choreographer.getInstance().postFrameCallback(frameCallback);
 
+
+            /**Specifying the lower left corner to the viewport rectangle, in pixel */
             GLES20.glViewport(0, 0, width, height);
             GLHelpers.checkGlError("glViewport");
 
             float aspectRatio = (float) width / height;
+
+            /**Define the projection matrix*/
             Matrix.perspectiveM(projectionMatrix, 0, FOVY, aspectRatio, Z_NEAR, Z_FAR);
             Matrix.setIdentityM(viewMatrix, 0);
             // Apply initial rotation

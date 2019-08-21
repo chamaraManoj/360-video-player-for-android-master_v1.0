@@ -63,6 +63,8 @@ public class SphericalPlayerActivity extends AppCompatActivity{
         }
 
         setContentView(R.layout.activity_main);
+
+        /**Custom layout, How can we extend our own texture view to the layout???*/
         videoPlayer = (SphericalVideoPlayer) findViewById(R.id.spherical_video_player);
         //videoPlayer.setVideoURIPath(getMedia(VIDEO_SAMPLE));
         videoPlayer.setVideoURIPath(SAMPLE_VIDEO_PATH);

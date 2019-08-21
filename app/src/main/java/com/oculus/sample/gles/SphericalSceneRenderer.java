@@ -20,6 +20,7 @@ import android.opengl.GLES11Ext;
 import android.opengl.GLES20;
 import android.opengl.GLES30;
 import android.opengl.Matrix;
+import android.util.Log;
 
 import com.oculus.sample.SphericalPlayerActivity;
 import com.oculus.sample.R;
@@ -51,24 +52,37 @@ public class SphericalSceneRenderer {
                 SphericalPlayerActivity.readRawTextFile(context, R.raw.video_vertex_shader),
                 SphericalPlayerActivity.readRawTextFile(context, R.raw.video_fragment_shader));
 
+        /**Not clear
+         * But getting a specific location of those values*/
         aPositionLocation = shaderProgram.getAttribute("aPosition");
         uMVPMatrixLocation = shaderProgram.getUniform("uMVPMatrix");
         uTextureMatrixLocation = shaderProgram.getUniform("uTextureMatrix");
         aTextureCoordLocation = shaderProgram.getAttribute("aTextureCoord");
+        Log.d("Debug","aPosition :" +aPositionLocation+ " uMVPMatrix: "+ uMVPMatrixLocation
+        +" uTextureMatrix "+ uTextureMatrixLocation + " aTextureCoord: "+ aTextureCoordLocation);
 
         GLES20.glDisable(GLES20.GL_DEPTH_TEST);
 
         sphere = new Sphere(SPHERE_SLICES, 0.f, 0.f, 0.f, SPHERE_RADIUS, SPHERE_INDICES_PER_VERTEX);
 
+        /**Program is created using the glCreateProgram. There are several functions called when
+         * creting the program. Previously mentioned vertex and fragment shaders are used for the
+         * program creation. This function install the created program to the rendering process in
+         * in this initial step using its program handle*/
         GLES20.glUseProgram(shaderProgram.getShaderHandle());
 
+        /**Bit unclear the remaining part. Modifying the vertex positino and texture location
+         * according to the sphere coordinates defined.
+         * enable the above attributes arrays as */
         GLES20.glEnableVertexAttribArray(aPositionLocation);
         GLHelpers.checkGlError("glEnableVertexAttribArray");
 
+        /**Modify the aPositionLocation vector according to the sphere created*/
         GLES20.glVertexAttribPointer(aPositionLocation, 3,
                 GLES20.GL_FLOAT, false, sphere.getVerticesStride(), sphere.getVertices());
 
         GLHelpers.checkGlError("glVertexAttribPointer");
+
 
         GLES20.glEnableVertexAttribArray(aTextureCoordLocation);
         GLHelpers.checkGlError("glEnableVertexAttribArray");

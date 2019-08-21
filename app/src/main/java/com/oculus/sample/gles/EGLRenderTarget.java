@@ -1,11 +1,11 @@
 /**
  * Copyright 2016-present, Facebook, Inc.
  * All rights reserved.
- *
+ * <p>
  * Licensed under the Creative Commons CC BY-NC 4.0 Attribution-NonCommercial
  * License (the "License"). You may obtain a copy of the License at
  * https://creativecommons.org/licenses/by-nc/4.0/.
- *
+ * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
@@ -34,12 +34,15 @@ public class EGLRenderTarget {
     }
 
     public void init() {
+
+        /**Return a connection to the diaplay*/
         eglDisplay = EGL14.eglGetDisplay(EGL14.EGL_DEFAULT_DISPLAY);
         if (eglDisplay == EGL14.EGL_NO_DISPLAY) {
             abortWithEGLError("eglGetDisplay");
         }
 
         int[] version = new int[2];
+        /**Initialize the display connection taken from the previous step*/
         if (!EGL14.eglInitialize(eglDisplay, version, 0, version, 1)) {
             abortWithEGLError("eglInitialize");
         }
@@ -53,8 +56,12 @@ public class EGLRenderTarget {
                 EGL14.EGL_NONE
         };
 
+        /**Wrapper class for EGL config objects. This store the configurtaion objects return by
+         * several functions*/
         EGLConfig[] configs = new EGLConfig[1];
         int[] numConfigs = new int[1];
+        /**Return a list of EGL frame buffer configurations corresponding to the given conditions in
+         * the attribute list we have given*/
         if (!EGL14.eglChooseConfig(
                 eglDisplay,
                 attributeList,
@@ -77,6 +84,8 @@ public class EGLRenderTarget {
                 EGL14.EGL_CONTEXT_CLIENT_VERSION, 2,
                 EGL14.EGL_NONE
         };
+
+        /**Create a new EGL rendering context according to previous conditions*/
         eglContext = EGL14.eglCreateContext(
                 eglDisplay, eglConfig, EGL14.EGL_NO_CONTEXT, contextAttribs, 0);
 
@@ -86,21 +95,26 @@ public class EGLRenderTarget {
     }
 
     public void createRenderSurface(SurfaceTexture surfaceTexture) {
+
         if (!hasValidContext()) {
             init();
         }
 
+        /**Create the surface attribute list that we need for the surface*/
         int[] surfaceAttribs = {
                 EGL14.EGL_NONE
         };
 
+        /**Create a on-scree EGL window surface and returning a handle to it. This the place where
+         * the surface texture is combined with the EGL rendering interface*/
         eglSurface = EGL14.eglCreateWindowSurface(
                 eglDisplay, eglConfig, surfaceTexture, surfaceAttribs, 0);
 
         if (eglSurface == null || eglSurface == EGL14.EGL_NO_SURFACE) {
             abortWithEGLError("eglCreateWindowSurface");
         }
-
+        /**Attaching the EGL rendering context to the EGL surface. Combine the egl display, surface
+         * to draw, surface to read and EGL context together*/
         makeCurrent();
     }
 
@@ -116,6 +130,7 @@ public class EGLRenderTarget {
                 Integer.toHexString(error) + ": " +
                 GLUtils.getEGLErrorString(error));
     }
+
 
     public void makeCurrent() {
         if (!EGL14.eglMakeCurrent(eglDisplay, eglSurface, eglSurface, eglContext)) {
